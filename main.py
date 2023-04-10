@@ -1,50 +1,144 @@
-'''Задача 34: Винни-Пух попросил Вас посмотреть, есть ли в его стихах ритм.
-Поскольку разобраться в его кричалках не настолько просто, насколько легко он их придумывает,
-Вам стоит написать программу. Винни-Пух считает, что ритм есть, если число слогов (т.е. число гласных букв)
-в каждой фразе стихотворения одинаковое.
-Фраза может состоять из одного слова, если во фразе несколько слов, то они разделяются дефисами.
-Фразы отделяются друг от друга пробелами. Стихотворение Винни-Пух вбивает в программу с клавиатуры.
-В ответе напишите “Парам пам-пам”, если с ритмом все в порядке и “Пам парам”, если с ритмом все не в порядке
-Ввод: пара-ра-рам рам-пам-папам па-ра-па-дам
-Вывод: Парам пам-пам'''
+'''
+Задача 38: Дополнить телефонный справочник возможностью изменения и удаления данных.
+Пользователь также может ввести имя или фамилию, и Вы должны реализовать функционал
+для изменения и удаления данных.
+'''
 
-def rhythm(str):
-    str = str.split()
-    list_1 = []
-    for word in str:
-        sum_w = 0
-        for i in word:
-            if i in 'аеёиоуыэюя':
-                sum_w += 1
-        list_1.append(sum_w)
-    return len(list_1) == list_1.count(list_1[0])
+def print_records(file_name: str):
+    with open(file_name, 'r', encoding='utf-8') as data:
+        for line in data:
+            print(*line.split(';'), end='')
 
 
-str_1 = 'пара-ра-рам рам-пам-папам па-ра-па-дам'
-if rhythm(str_1):
-    print('Парам пам-пам')
-else:
-    print('Пам парам')
-
-    '''Задача 36: Напишите функцию print_operation_table(operation, num_rows=6, num_columns=6),
-которая принимает в качестве аргумента функцию, вычисляющую элемент по номеру строки и
-столбца. Аргументы num_rows и num_columns указывают число строк и столбцов таблицы,
-которые должны быть распечатаны. Нумерация строк и столбцов идет с единицы (подумайте,
-почему не с нуля). Примечание: бинарной операцией называется любая операция, у которой
-ровно два аргумента, как, например, у операции умножения
-Ввод: print_operation_table(lambda x, y: x * y)
-Вывод:
- 1 2 3 4 5 6
- 2 4 6 8 10 12
- 3 6 9 12 15 18
- 4 8 12 16 20 24
- 5 10 15 20 25 30
- 6 12 18 24 30 36 '''
-
-#def print_operation_table(operation, num_rows=6, num_columns=6):
-#    a = [[operation(i, j) for j in range(1, num_columns + 1)] for i in range(1, num_rows + 1)]
-#    for i in a:
-#        print(*[f"{x:>3}" for x in i])
+def input_records(file_name: str):
+    with open(file_name, 'r+', encoding='utf-8') as data:
+        record_id = 0
+        for line in data:
+            if line != '':
+                record_id = line.split(';', 1)[0]
+        print('Введите фамилию, имя, отчество, номер телефона через пробел')
+        line = f'{int(record_id) + 1};' + ';'.join(input().split()[:4]) + ';\n'
+        confirm = confirmation('добавление записи')
+        if confirm == 'y':
+            data.write(line)
 
 
-#print_operation_table(lambda x, y: x * y)
+def find_char():
+    print('Выберите характеристику:')
+    print('0 - id, 1 - фамилия, 2 - имя, 3 - отчество, 4 - номер, q - выйти')
+    char = input()
+    while char not in ('0', '1', '2', '3', '4', 'q'):
+        print('Введены неверные данные')
+        print('Выберите характеристику:')
+        print('0 - id, 1 - фамилия, 2 - имя, 3 - отчество, 4 - номер, q - выйти')
+        char = input()
+    if char != 'q':
+        inp = input('Введите значение\n')
+        return char, inp
+    else:
+        return 'q', 'q'
+
+
+def find_records(file_name: str, char, condition):
+    if condition != 'q':
+        printed = False
+        with open(file_name, 'r', encoding='utf-8') as data:
+            for line in data:
+                if condition == line.split(';')[int(char)]:
+                    print(*line.split(';'))
+                    printed = True
+        if not printed:
+            print("Не найдено")
+        return printed
+
+
+def check_id_record(file_name: str, text: str):
+    decision = input(f'Вы знаете id записи которую хотите {text}? 1 - да, 2 - нет, q - выйти\n')
+    while decision not in ('1', 'q'):
+        if decision != '2':
+            print('Введены неверные данные')
+        else:
+            find_records(path, *find_char())
+        decision = input(f'Вы знаете id записи которую хотите {text}? 1 - да, 2 - нет, q - выйти\n')
+    if decision == '1':
+        record_id = input('Введите id, q - выйти\n')
+        while not find_records(file_name, '0', record_id) and record_id != 'q':
+            record_id = input('Введите id, q - выйти\n')
+        return record_id
+    return decision
+
+
+def confirmation(text: str):
+    confirm = input(f"Подтвердите {text} записи: y - да, n - нет\n")
+    while confirm not in ('y', 'n'):
+        print('Введены неверные данные')
+        confirm = input(f"Подтвердите {text} записи: y - да, n - нет\n")
+    return confirm
+
+
+def replace_record_line(file_name: str, record_id, replaced_line: str):
+    replaced = ''
+    with open(file_name, 'r', encoding='utf-8') as data:
+        for line in data:
+            replaced += line
+            if record_id == line.split(';', 1)[0]:
+                replaced = replaced.replace(line, replaced_line)
+    with open(file_name, 'w', encoding='utf-8') as data:
+        data.write(replaced)
+
+
+def change_records(file_name: str):
+    record_id = check_id_record(file_name, 'изменить')
+    if record_id != 'q':
+        replaced_line = f'{int(record_id)};' + ';'.join(
+            input('Введите фамилию, имя, отчество, номер телефона через пробел\n').split()[:4]) + ';\n'
+        confirm = confirmation('изменение')
+        if confirm == 'y':
+            replace_record_line(file_name, record_id, replaced_line)
+
+
+def delete_records(file_name: str):
+    record_id = check_id_record(file_name, 'удалить')
+    if record_id != 'q':
+        confirm = confirmation('удаление')
+        if confirm == 'y':
+            replace_record_line(file_name, record_id, '')
+
+
+path = 'phone_book.txt'
+
+try:                        # исключения try/except/finally
+    file = open(path, 'r')  # открыть файл
+except IOError:             # если нет файла он создается
+    print('Создан новый справочник -> phone_book.txt ')
+    file = open(path, 'w')
+finally:                    
+    file.close()
+
+actions = {'1': 'список',
+           '2': 'запись',
+           '3': 'поиск',
+           '4': 'изменение',
+           '5': 'удаление',
+           'q': 'выход'}
+
+action = None
+while action != 'q':
+    print('Какое действие хотите совершить?', *[f'{i} - {actions[i]}' for i in actions])
+    action = input()
+    while action not in actions:
+        print('Какое действие хотите совершить?', *[f'{i} - {actions[i]}' for i in actions])
+        action = input()
+        if action not in actions:
+            print('Введены неверные данные')
+    if action != 'q':
+        if action == '1':
+            print_records(path)
+        elif action == '2':
+            input_records(path)
+        elif action == '3':
+            find_records(path, *find_char())
+        elif action == '4':
+            change_records(path)
+        elif action == '5':
+            delete_records(path)
